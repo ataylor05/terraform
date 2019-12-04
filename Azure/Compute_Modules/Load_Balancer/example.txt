@@ -1,0 +1,22 @@
+locals {
+  app_name          = "App1"
+  region            = "eastus2"
+  resource_group    = "sre-nonprod-east2-rg"
+  tag_environment   = "production"
+  tag_business_unit = "developers"
+}
+
+module "Load_Balancer" {
+  source            = "./Azure/Compute_Modules/Load_Balancer"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+
+  # LB Options
+  lb_name           = "${local.app_name}-LB"
+  lb_probe_path     = "/health.html"
+  lb_probe_port     = 80
+}

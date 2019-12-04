@@ -1,0 +1,28 @@
+locals {
+  region      = "us-east-2"
+}
+
+provider "aws" {
+    region  = "${local.region}"
+    profile = "h12345"
+}
+
+module "VPC_using_3_AZ" {
+    source  = "./AWS/VPC_Modules/VPC_using_3_AZ"
+    # VPC Options
+    vpc_cidr    = "192.168.0.0/16"
+    vpc_tenancy = "default"
+    # Subnets
+    availability_zones    = ["${local.region}a", "${local.region}b", "${local.region}c"]
+    public_subnets        = ["192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24"]
+    private_subnets       = ["192.168.3.0/24", "192.168.4.0/24", "192.168.5.0/24"]
+    data_subnets          = ["192.168.6.0/24", "192.168.7.0/24", "192.168.8.0/24"]
+    mgmt_subnets          = ["192.168.9.0/24", "192.168.10.0/24", "192.168.11.0/24"]
+    # Tags
+    vpc_tag_name         = "Dev-VPC"
+    vpc_tag_cost_center  = "dev"
+    vpc_tag_environment  = "development"
+    # VPC Flow Logs
+    enable_vpc_flow_logs            = true
+    vpc_flow_logs_retention_in_days = 1
+}

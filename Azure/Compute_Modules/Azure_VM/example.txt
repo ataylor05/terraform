@@ -1,0 +1,29 @@
+locals {
+  app_name          = "App1"
+  region            = "East US 2"
+  resource_group    = "sre-nonprod-east2-rg"
+  tag_environment   = "production"
+  tag_business_unit = "developers"
+}
+
+module "Azure_VM" {
+  source            = "./Azure/Compute_Modules/Azure_VM"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+  app_name          = local.app_name
+
+  # VM Options
+  vm_name                      = "${local.app_name}-VM"
+  vm_vnet_name                 = "sre-nonprod-east2-vn"
+  vnet_resource_group          = "sre-nonprod-east2-rg"
+  vm_subnet_name               = "sre-nonprod-east2-25-4-sn"
+  vm_size                      = "Standard_A1"
+  vm_hostname                  = "${local.app_name}-1"
+  vm_username                  = "superuser"
+  vm_user_password             = "Ch*angeM#N*w1"
+  delete_disks_on_termination  = false
+}

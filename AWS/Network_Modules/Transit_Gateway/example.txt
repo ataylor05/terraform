@@ -1,0 +1,70 @@
+locals {
+  region = "us-east-2"
+}
+
+module "Dev_VPC" {
+  source = "./Modules/VPC_Modules/VPC_using_2_AZ"
+
+  # VPC Options
+  vpc_cidr    = "192.168.0.0/24"
+  vpc_tenancy = "default"
+
+  # Subnets
+  availability_zones = ["${local.region}a", "${local.region}b"]
+  public_subnets     = ["192.168.0.0/27", "192.168.0.32/27"]
+  private_subnets    = ["192.168.0.64/27", "192.168.0.96/27"]
+  data_subnets       = ["192.168.0.128/27", "192.168.0.160/27"]
+  mgmt_subnets       = ["192.168.0.192/27", "192.168.0.224/27"]
+
+  # Tags
+  vpc_tag_name        = "Dev-VPC"
+  vpc_tag_cost_center = "dev"
+  vpc_tag_environment = "development"
+
+  # VPC Flow Logs
+  enable_vpc_flow_logs            = false
+  vpc_flow_logs_retention_in_days = 1
+}
+
+module "Prod_VPC" {
+  source = "./Modules/VPC_Modules/VPC_using_2_AZ"
+
+  # VPC Options
+  vpc_cidr    = "192.168.1.0/24"
+  vpc_tenancy = "default"
+
+  # Subnets
+  availability_zones = ["${local.region}a", "${local.region}b"]
+  public_subnets     = ["192.168.1.0/27", "192.168.1.32/27"]
+  private_subnets    = ["192.168.1.64/27", "192.168.1.96/27"]
+  data_subnets       = ["192.168.1.128/27", "192.168.1.160/27"]
+  mgmt_subnets       = ["192.168.1.192/27", "192.168.1.224/27"]
+
+  # Tags
+  vpc_tag_name        = "Prod-VPC"
+  vpc_tag_cost_center = "prod"
+  vpc_tag_environment = "production"
+
+  # VPC Flow Logs
+  enable_vpc_flow_logs            = false
+  vpc_flow_logs_retention_in_days = 1
+}
+
+module "Transit_Gateway" {
+  source               = "./Modules/Network_Modules/VPC_Transit_Gateway"
+  transit_gateway_name = "VPC Transit Gateway"
+  # VPC 1
+  vpc_1 = "${module.Dev_VPC.vpc_id}"
+  vpc_1_cidr = "${module.Dev_VPC.vpc_cidr}"
+  vpc_1_subnets = "${module.Dev_VPC.private_subnets[0]}"
+  vpc_1_attachment_name = "VPC 1 TG Attachment"
+  vpc_1_public_route_table = "${module.Dev_VPC.public_route_table_id}"
+  vpc_1_private_route_table = "${module.Dev_VPC.private_route_table_id}"
+  # VPC 2
+  vpc_2 = "${module.Prod_VPC.vpc_id}"
+  vpc_2_cidr = "${module.Prod_VPC.vpc_cidr}"
+  vpc_2_subnets = "${module.Prod_VPC.private_subnets[0]}"
+  vpc_2_attachment_name = "VPC 2 TG Attachment"
+  vpc_2_public_route_table = "${module.Prod_VPC.public_route_table_id}"
+  vpc_2_private_route_table = "${module.Prod_VPC.private_route_table_id}"
+}

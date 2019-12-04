@@ -1,0 +1,15 @@
+module "App_Engine" {
+  source               = "./GCP/Compute/App_Engine"
+  location             = "us-central"
+
+  # Project details
+  organization_name    = "example.com"
+  project_name         = "python-app-1"
+  project_id           = "python-app-1"
+
+  # Storage bucket
+  bucket_name          = "python-app-code-bucket"
+  force_destroy_bucket = true
+  bucket_storage_class = "STANDARD"
+  bucket_versioning    = true
+}

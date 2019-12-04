@@ -1,0 +1,90 @@
+locals {
+  region      = "us-east-2"
+}
+
+provider "aws" {
+    region  = "${local.region}"
+    profile = "h12345"
+}
+
+module "VPC_using_2_AZ" {
+    source  = "./AWS/VPC_Modules/VPC_using_2_AZ"
+    # VPC Options
+    vpc_cidr    = "192.168.0.0/16"
+    vpc_tenancy = "default"
+    # Subnets
+    availability_zones    = ["${local.region}a", "${local.region}b"]
+    public_subnets        = ["192.168.0.0/24", "192.168.1.0/24"]
+    private_subnets       = ["192.168.2.0/24", "192.168.3.0/24"]
+    data_subnets          = ["192.168.4.0/24", "192.168.5.0/24"]
+    mgmt_subnets          = ["192.168.6.0/24", "192.168.7.0/24"]
+    # Tags
+    vpc_tag_name         = "Dev-VPC"
+    vpc_tag_cost_center  = "dev"
+    vpc_tag_environment  = "development"
+    # VPC Flow Logs
+    enable_vpc_flow_logs            = false
+    vpc_flow_logs_retention_in_days = 1
+}
+
+module "SSL_Certificate" {
+    source               = "./AWS/Compute_Modules/Existing_SSL_Certificate"
+    domin_name           = "*.exampledoamin.com"
+    alt_domin_name       = "exampledomain.com"
+    ssl_key              = <<-EOF
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDLqqfF3UzXqzNX
++0sItblBYnPzGORzAwvCgaSc0hlzFnAaEeaKZVTM6bvixUY+8znytxva6yD4E0Lf
+HStzVLexyitN7L8VD6zaB0jYXDK5nzUZM5bE/X8mzuev6G+edKuN8Tj7/8lZ5+po
+QN5iOZ1RrFeU8QqNrcdJW/mD1yaRTr2tpLalIVfyqUTp3y0lM9lVX251MDWrvKhz
+4OAGusPVa1cyd/YiNmdykZPB6UVUcf0Irq9AX96i7hfSVvaw5AFUVfKE7iOoOPLC
+2LrLfrv+fu/vjY+SB8VI+CkofTa1BuSfusnygYbc0WojUHwdfLYIKgrgOwcAeRdo
+KjEGdMj5AgMBAAECggEARgP6/VigzBu84Ogw2WOvtjykY9QQ5UEMz+dFsevAeAIk
+s7Gnsbg4OOG5h7IN/iIbr8cnOlFO2jm06YLbpyBeri40SOu0nQbwg1uxvT+k6I9E
+787+a+ZByhOjLqQXiz/MolVlI6zBibjiqshyKw5neOZojXl4CVDOi/ekhaB3T8hH
+BwS2qAXD9wIYMwpL4WgMWQQrciv2kz1hPiOmOE+9uCvR2yM268ZKXsPcxwC0ZrFN
+tsKoY24WvZ6OSv6fAUzbHvKVLou2bDbLNrSujoYNeinTMvuyK63TsVnzOwA5U6o1
+Cw5unY2yf1uiNaETEX4Cxchdxuow2wXZoHI45zvzAQKBgQDm+0ipjFHyEGYCMlAi
+vucMuBDTVE3JY3wswaRzSbd0g8S81aWjdxLT4ovUvlXjjf22j2po0DNwngKRiTuh
+o/tuYDeOH3f8ZLiT0TBLCrQUSHbtTrSnz71B2JSt8mJtCbgEEnE5IZY+JjN6oZ0g
+HdZDzu5J8I0zbUwki579r3VgyQKBgQDhufm5AU60e1EQWE/DV1MqRqCGd6IrkdwI
+NkJ3MUDIA4bPXqZwliCHkwrRry4UW2vuNUS9RH19IoQrzHiYv/ZdDTAjndUt7Epz
+SeyNcPk97Cu4COs1cOOksgXwAiNfyyD2zuyCbmD6QPeALxo6imX4vJhdNAl1Ecrt
+YZ/jTsLusQKBgQDWLGpTzCivq0TrBHwJu7nBsWroiWMXOYgKeANkYxYYk5X5AqFz
+0RVEIuxFd7dsKFz4ykKArY0E/36iM/13A/Y/gjgBMGyxOzNq3K1K58HSjN65bCFW
++OkkBQ7Xu8hIEpruK6uQrfQB7KoPK4vmG8RxW47YQJSs+st/l3b1A5xzAQKBgEZ+
+YRnA6cZ9mJRlMAvOUr+qLOmxpOi8dZ3u7BTzQcr1Jv3ODmasy93rMv7HGbnrzyom
+YqBFKneQ9vwCsErr8FGhE76bxP7Bg4K7vG9zr7MB9alUx7f52G4P1sDcuhVph5Ls
+jnoxZIHjFihnDWbo3+2tYFwDK0zvUJOP4HIJn+ERAoGBAJRO6G6qS55llxTYxzd+
+0iRj/p2n+BzRtZheWptgX2l8pP4jODhfQG/mkPCJJ6Ct3AU7l8WTrh4Yi5bNEMPi
++DbiSXdKhiaydxcV/amwkivj/j5JjdMZex6s7ZYNff/dnMcQrG13TpZtU5lsdUaT
+IETyWyv0CLMf442Qo3JJPjAV
+-----END PRIVATE KEY-----
+EOF
+ssl_certificate        = <<-EOF
+-----BEGIN CERTIFICATE-----
+MIIDYDCCAkigAwIBAgIJAIwovulifZpaMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQwHhcNMTkwNzEzMTQwNDUzWhcNMjAwNzEyMTQwNDUzWjBF
+MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEAy6qnxd1M16szV/tLCLW5QWJz8xjkcwMLwoGknNIZcxZwGhHmimVUzOm7
+4sVGPvM58rcb2usg+BNC3x0rc1S3scorTey/FQ+s2gdI2FwyuZ81GTOWxP1/Js7n
+r+hvnnSrjfE4+//JWefqaEDeYjmdUaxXlPEKja3HSVv5g9cmkU69raS2pSFX8qlE
+6d8tJTPZVV9udTA1q7yoc+DgBrrD1WtXMnf2IjZncpGTwelFVHH9CK6vQF/eou4X
+0lb2sOQBVFXyhO4jqDjywti6y367/n7v742PkgfFSPgpKH02tQbkn7rJ8oGG3NFq
+I1B8HXy2CCoK4DsHAHkXaCoxBnTI+QIDAQABo1MwUTAdBgNVHQ4EFgQUnAnJDZVD
+Zq6Us3hnsqYFPw59byYwHwYDVR0jBBgwFoAUnAnJDZVDZq6Us3hnsqYFPw59byYw
+DwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEALpSuSYEr69zCxRSR
+OMHMASGyhjhoSmG9qTPhVLZ0mvwk/DTwfiUrnNEtCMZuzk1Fwfz73A7PTMjbtdvz
+23jnPcwIrFO05tRQH9HdtVmURxO/abR0+idIZNH4gYZ99Zn2TaIafywlLcIp4nVc
+9E0KeZnLErtm/+sYvN2tOSDp7pJWakVfSuGt9LlpBcmjuW+Na2PZYeMoNbYV6KPl
+o8g61xlS1hPWjdRtjJG4fmuvu8zLYuVUDZu8ELBLFoPv3ZF5qQ/5kC5GWXdW0YZn
+nszMu+77Gqrsywa5sJPpWa5XTUgALrdjBKSHwELyyYiwlyjN0qhFDsAWXnbUcyGi
+cPWIxg==
+-----END CERTIFICATE-----
+EOF
+    ssl_chain_certificate = <<-EOF
+EOF
+}
+

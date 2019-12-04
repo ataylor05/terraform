@@ -1,0 +1,17 @@
+---
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - sleep 60
+      - echo "Installing HashiCorp Packer..."
+      - curl -qL -o packer.zip https://releases.hashicorp.com/packer/1.3.4/packer_1.3.4_linux_amd64.zip && unzip packer.zip
+      - echo "Validating amazon-linux-packer-template.json"
+      - ./packer validate amazon-linux-packer-template.json
+  build:
+    commands:
+      - ./packer build amazon-linux-packer-template.json
+  post_build:
+    commands:
+      - echo "HashiCorp Packer build completed on `date`"

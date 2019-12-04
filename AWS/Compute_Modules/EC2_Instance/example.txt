@@ -1,0 +1,67 @@
+locals {
+  region      = "us-east-2"
+}
+
+provider "aws" {
+    region  = "${local.region}"
+    profile = "h12345"
+}
+
+module "VPC_using_2_AZ" {
+    source  = "./AWS/VPC_Modules/VPC_using_2_AZ"
+    # VPC Options
+    vpc_cidr    = "192.168.0.0/16"
+    vpc_tenancy = "default"
+    # Subnets
+    availability_zones    = ["${local.region}a", "${local.region}b"]
+    public_subnets        = ["192.168.0.0/24", "192.168.1.0/24"]
+    private_subnets       = ["192.168.2.0/24", "192.168.3.0/24"]
+    data_subnets          = ["192.168.4.0/24", "192.168.5.0/24"]
+    mgmt_subnets          = ["192.168.6.0/24", "192.168.7.0/24"]
+    # Tags
+    vpc_tag_name         = "Dev-VPC"
+    vpc_tag_cost_center  = "dev"
+    vpc_tag_environment  = "development"
+    # VPC Flow Logs
+    enable_vpc_flow_logs            = false
+    vpc_flow_logs_retention_in_days = 1
+}
+
+module "Standard_Security_Groups" {
+    source  = "./AWS/Compute_Modules/Standard_Security_Groups"
+    vpc_id  = "${module.VPC_using_2_AZ.vpc_id}"
+}
+
+module "EC2_Instance" {
+    source                         = "./AWS/Compute_Modules/EC2_Instance"
+    # EC2 Options
+    ami_name                       = "amzn2-ami-hvm-2*"
+    instance_type                  = "t3a.small"
+    availability_zone              = "${local.region}a"
+    key_name                       = "dev"
+    iam_instance_profile           = null
+    ebs_optimized                  = true
+    disable_api_termination        = false
+    detailed_monitoring            = false
+    vpc_security_group_ids         = ["${module.Standard_Security_Groups.web_sg}"]
+    subnet_id                      = "${module.VPC_using_2_AZ.public_subnets[0][0]}"
+    associate_public_ip_address    = true
+    root_ebs_size                  = 20
+    root_ebs_type                  = "gp2"
+    root_ebs_delete_on_termination = true
+    # Tags
+    ec2_tag_name                   = "Webserver"
+    ec2_tag_cost_center            = "dev"
+    ec2_tag_environment            = "development"
+    ec2_tag_backups                = "true"
+    ec2_tag_patch_group            = "AmazonLinux2"
+    # User Data
+    user_data = <<-EOF
+    #!/bin/bash
+    yum install -y httpd php
+    systemctl start httpd
+    systemctl enable httpd
+    echo "<?php phpinfo(); ?>" > /var/www/html/info.php
+    chown -R apache:apache /var/www/html
+    EOF
+}

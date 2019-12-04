@@ -1,0 +1,57 @@
+locals {
+  app_name          = "App1"
+  region            = "US East"
+  resource_group    = "App1-RG"
+  tag_environment   = "production"
+  tag_business_unit = "developers"
+}
+
+module "Load_Balancer" {
+  source            = "./Azure/Compute_Modules/Load_Balancer"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+
+  # LB Options
+  lb_name           = "${local.app_name}-LB"
+  lb_probe_path     = "/health.html"
+  lb_probe_port     = 80
+}
+
+module "VM_Scale_Set" {
+  source            = "./Azure/Compute_Modules/VM_Scale_set"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  app_name          = local.app_name
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+
+  # VM Scale Set Options
+  vm_ss_name                                     = "${local.app_name}"
+  rolling_upgrade_max_batch_percentage           = 20
+  rolling_upgrade_max_unhealthy_batch_percentage = 20
+  max_percent_of_upgraded_unhealthy              = 5
+  lb_health_probe                                = module.Load_Balancer.lb_probe_id
+  lb_backend_pool                                = module.Load_Balancer.lb_probe_id
+  vm_ss_sku                                      = "A1v2"
+  vm_ss_tier                                     = "standard"
+  vm_ss_capacity                                 = "2"
+  image_publisher                                = "RedHat" 
+  image_offer                                    = "RHEL"
+  image_sku                                      = "7"
+
+  # OS Options
+  os_hostname                                    = "${local.app_name}-Web1"
+  os_admin_user                                  = "superuser"
+  admin_passwd                                   = "Ch@ngeM$N*w1"
+
+  # Network Options
+  vm_vnet_name                                   = "VNET1"
+  vnet_resource_group                            = "VNET1-RG"
+  vm_subnet_name                                 = "app"
+}

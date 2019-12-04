@@ -1,0 +1,52 @@
+locals {
+  region            = "eastus2"
+  resource_group    = "sre-nonprod-east2-rg"
+  tag_environment   = "testing"
+  tag_business_unit = "alm"
+}
+
+module "Azure_Kubernetes_Service" {
+  source            = "./Azure/Container_Modules/AKS"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+
+  # App Service Options
+  cluster_name                     = "k8stest"
+  cluster_subnet                   = "k8s-subnet"
+  cluster_dns_prefix               = "alm-k8s-"
+  subnet_vnet_name                 = "vnet1"
+  log_analytics_name_prefix        = "alm-demo-k8s"
+  node_admin_username              = "humana"
+  node_admin_ssh_pub_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAoMkbr6EVrqZU5/a5RVZ5uX2vCixZXSk29+DJfjZzvVwE3bPaUCkZYzKspk4JHd6Y2p86U14VQg4NRge0Ym58yVnTY0Mjt4W+EXin/kxHQvu56NHQlCAigQ2r6qoW4jv1nTmiaTnOgGrXjHY3nMfDd5ud7y/SXviRQBXIn/UCbcq7h0IizFNZtGA9bSywfWkgnpr7z/cXk/WTe9ppjWPJQVqJZAwr3VMdjBpR7CWYs2MTXqY8qadeYpj77p9F52Xrqifh2RWFYfe+raWOEcgJ96b+LcLZ8bvHAEFEU2pX+4hOJfHRbIoz8k90Hyc6a8/3f+T9bJvXyCW796n8AHmWmQ== rsa-key-20191030"
+  aks_network_plugin               = "kubenet"
+  aks_pod_cidr                     = "172.16.0.0/16"
+  aks_docker_bridge_cidr           = "172.17.0.1/16"
+  aks_service_cidr                 = "192.168.254.0/24"
+  aks_dns_service_ip               = "192.168.254.254"
+  cluster_node_count               = 3
+  cluster_node_vm_size             = "Standard_D2_v2"
+  cluster_node_vm_disk_size        = 100
+  log_analytics_workspace_sku      = "PerGB2018"
+  log_analytics_workspace_location = "eastus"
+  service_principal_id             = "d778d568-0d3a-47c6-9b07-6bec47a65287"
+  service_principal_secret         = "5r_3W7rNpRi7KeAj:W[LzVD_@j:2z40R"
+  container_registry_name          = "HumAlmContainerRegistry1"
+  container_registry_sku           = "Standard"
+  container_registry_admin_enabled = true
+}
+
+# .\terraform.exe output kube_config
+#
+# $env:KUBECONFIG = "c:\kubectl\azurek8s"
+#
+# C:\kubectl\kubectl.exe get nodes
+#
+# docker login humanaalmtestcontainerregistry1.azurecr.io
+#
+# docker tag tasktop:19.2.20.20190826 humanaalmtestcontainerregistry1.azurecr.io/tasktop:19.2.20.20190826
+#
+# docker push humanaalmtestcontainerregistry1.azurecr.io/tasktop:19.2.20.20190826

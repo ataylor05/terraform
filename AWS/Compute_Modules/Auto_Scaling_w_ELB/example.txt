@@ -1,0 +1,48 @@
+locals {
+  region = "us-east-2"
+}
+
+module "Dev_VPC" {
+  source                          = "./Modules/VPC_Modules/VPC_using_2_AZ"
+  # VPC Options
+  vpc_cidr                        = "192.168.0.0/24"
+  vpc_tenancy                     = "default"
+  # Subnets
+  availability_zones              = ["${local.region}a", "${local.region}b"]
+  public_subnets                  = ["192.168.0.0/27", "192.168.0.32/27"]
+  private_subnets                 = ["192.168.0.64/27", "192.168.0.96/27"]
+  data_subnets                    = ["192.168.0.128/27", "192.168.0.160/27"]
+  mgmt_subnets                    = ["192.168.0.192/27", "192.168.0.224/27"]
+  # Tags
+  vpc_tag_name                    = "Dev-VPC"
+  vpc_tag_cost_center             = "dev"
+  vpc_tag_environment             = "development"
+  # VPC Flow Logs
+  enable_vpc_flow_logs            = false
+  vpc_flow_logs_retention_in_days = 1
+}
+
+module "Auto_Scaling_w_ELB" {
+  source                               = "./Modules/Compute_Modules/Auto_Scaling_w_ELB"
+  vpc_id                               = module.Dev_VPC.vpc_id
+  # Auto Scaling Parameters
+  launch_template_name                 = "Launch-Template"
+  auto_scaling_group_name              = "Auto-Scaling-Group"
+  ec2_instance_names                   = "Auto Scaled Web"
+  ebs_volume_size                      = 20
+  ebs_optimized                        = true
+  iam_instance_profile                 = ""
+  image_id                             = "ami-0d8f6eb4f641ef691"
+  instance_type                        = "t3.small"
+  key_name                             = "dev"
+  detailed_monitoring                  = false
+  associate_public_ip_address          = true
+  subnets                              = module.Dev_VPC.private_subnets[0]
+  min_size                             = 2
+  max_size                             = 4
+  autoscaling_cpu_scale_up_threshold   = 75
+  autoscaling_cpu_scale_down_threshold = 50
+  # ELB Parameters
+  elb_name                             = "Dev-ELB"
+  internal_elb                         = false
+}

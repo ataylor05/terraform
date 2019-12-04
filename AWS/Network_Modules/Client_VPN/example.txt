@@ -1,0 +1,40 @@
+locals {
+  region = "us-east-2"
+}
+
+module "Dev_VPC" {
+  source = "./Modules/VPC_Modules/VPC_using_2_AZ"
+
+  # VPC Options
+  vpc_cidr    = "192.168.0.0/24"
+  vpc_tenancy = "default"
+
+  # Subnets
+  availability_zones = ["${local.region}a", "${local.region}b"]
+  public_subnets     = ["192.168.0.0/27", "192.168.0.32/27"]
+  private_subnets    = ["192.168.0.64/27", "192.168.0.96/27"]
+  data_subnets       = ["192.168.0.128/27", "192.168.0.160/27"]
+  mgmt_subnets       = ["192.168.0.192/27", "192.168.0.224/27"]
+
+  # Tags
+  vpc_tag_name        = "Dev-VPC"
+  vpc_tag_cost_center = "dev"
+  vpc_tag_environment = "development"
+
+  # VPC Flow Logs
+  enable_vpc_flow_logs            = false
+  vpc_flow_logs_retention_in_days = 1
+}
+
+module "Client_VPN" {
+  source            = "./Modules/Network_Modules/Client_VPN"
+  client_vpn_name   = "Dev VPC Client VPN"
+  client_cidr_block = "10.250.0.0/22"
+  split_tunnel      = true
+  vpn_subnets = "${module.Dev_VPC.management_subnets[0]}"
+  enable_ad_authentication = false
+  directory_id = ""
+  enable_ssl_authentication = true
+  asm_server_cert = "arn:aws:acm:us-east-2:155474293330:certificate/d536fadc-d93a-4dea-abae-dbb80fa02eae"
+  asm_client1_cert = "arn:aws:acm:us-east-2:155474293330:certificate/65ff19b5-4a7b-429a-bdb8-9dc93bdbf0fc"
+}

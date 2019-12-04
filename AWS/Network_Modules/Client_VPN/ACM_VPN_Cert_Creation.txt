@@ -1,0 +1,25 @@
+
+# git clone https://github.com/OpenVPN/easy-rsa.git
+# cd easy-rsa/easyrsa3
+
+DOMAIN='example.com'
+
+./easyrsa init-pki
+./easyrsa build-ca nopass
+./easyrsa build-server-full server nopass
+./easyrsa build-client-full client1.$DOMAIN nopass
+
+mkdir /vpn_certs
+cp pki/ca.crt /vpn_certs
+cp pki/issued/server.crt /vpn_certs
+cp pki/private/server.key /vpn_certs
+cp pki/issued/client1.$DOMAIN.crt /vpn_certs
+cp pki/private/client1.$DOMAIN.key /vpn_certs
+cd /vpn_certs
+
+# Upload server certificate
+aws acm import-certificate --certificate file://server.crt --private-key file://server.key --certificate-chain file://ca.crt --region region
+
+# Upload client certificate
+aws acm import-certificate --certificate file://client1.$DOMAIN.crt --private-key file://client1.$DOMAIN.key --certificate-chain file://ca.crt --region region
+

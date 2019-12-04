@@ -1,0 +1,7 @@
+.git/
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.backup
+*.example
+AzureProvider.tf

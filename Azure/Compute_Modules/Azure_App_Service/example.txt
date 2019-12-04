@@ -1,0 +1,26 @@
+locals {
+  app_name          = "App1"
+  region            = "East US 2"
+  resource_group    = "sre-nonprod-east2-rg"
+  tag_environment   = "production"
+  tag_business_unit = "developers"
+}
+
+module "App_Service" {
+  source            = "./Azure/Compute_Modules/Azure_App_Service"
+
+  # Environment Options
+  region            = local.region
+  resource_group    = local.resource_group
+  tag_environment   = local.tag_environment
+  tag_business_unit = local.tag_business_unit
+
+  # App Service Options
+  app_name                     = local.app_name
+  app_service_plan_tier        = "Standard"
+  app_service_plan_size        = "S1"
+  os_platform                  = "Linux"
+  capacity                     = "1"
+  app_service_https_only       = false
+  app_service_python_version   = "3.4"
+}
