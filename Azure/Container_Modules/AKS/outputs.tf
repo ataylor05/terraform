@@ -1,39 +1,39 @@
-output "client_key" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.client_key
+output "aks_cluster_name" {
+  value = azurerm_kubernetes_cluster.k8s.name
 }
 
-output "client_certificate" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.client_certificate
+output "aks_cluster_id" {
+  value = azurerm_kubernetes_cluster.k8s.id
 }
 
-output "cluster_ca_certificate" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.cluster_ca_certificate
+output "aks_cluster_fqdn" {
+  value = azurerm_kubernetes_cluster.k8s.fqdn
 }
 
-output "cluster_username" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.username
+output "aks_node_resource_group" {
+  value = azurerm_kubernetes_cluster.k8s.node_resource_group
 }
 
-output "cluster_password" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.password
+output "aks_identity_principal_id" {
+  value = azurerm_kubernetes_cluster.k8s.identity[0].principal_id
 }
 
-output "kube_config" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config_raw
+output "aks_kube_admin_config" {
+  value = azurerm_kubernetes_cluster.k8s.kube_admin_config
+  sensitive = true
 }
 
-output "host" {
-    value = azurerm_kubernetes_cluster.k8s.kube_config.0.host
+output "aks_kube_admin_config_raw" {
+  value = var.kubeconfig_raw_output ? azurerm_kubernetes_cluster.k8s.kube_admin_config_raw : null
+  sensitive = true
 }
 
-output "acr_login" {
-    value = azurerm_container_registry.acr.login_server
+output "aks_kube_config" {
+  value = azurerm_kubernetes_cluster.k8s.kube_config
+  sensitive = true
 }
 
-output "acr_username" {
-    value = azurerm_container_registry.acr.admin_username
-}
-
-output "acr_password" {
-    value = azurerm_container_registry.acr.admin_password
+output "aks_kube_config_raw" {
+  value = var.kubeconfig_raw_output ? azurerm_kubernetes_cluster.k8s.kube_config_raw : null
+  sensitive = true
 }

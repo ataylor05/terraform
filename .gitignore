@@ -6,3 +6,4 @@
 *.backup
 *.example
 AzureProvider.tf
+.DS_Store
