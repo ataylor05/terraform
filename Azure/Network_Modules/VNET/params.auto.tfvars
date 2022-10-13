@@ -61,3 +61,7 @@ remote_peer_ip        = "1.2.3.4"
 remote_network_cidr   = "192.168.0.0/16"
 pip_allocation_method = "Static"
 pip_sku               = "Standard"
+network_gateway_sku   = "VpnGw1"
+vpn_type              = "RouteBased"
+vpn_active_active     = false
+vpn_enable_bgp        = false

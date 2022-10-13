@@ -58,3 +58,23 @@ variable "pip_sku" {
     description = "The SKU of the Public IP. Accepted values are Basic and Standard"
     type        = string
 }
+
+variable "network_gateway_sku" {
+    description = "Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ"
+    type        = string
+}
+
+variable "vpn_type" {
+    description = "The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased"
+    type        = string
+}
+
+variable "vpn_active_active" {
+    description = "If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created."
+    type        = bool
+}
+
+variable "vpn_enable_bgp" {
+    description = "f true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway"
+    type        = bool
+}

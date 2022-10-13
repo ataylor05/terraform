@@ -29,3 +29,11 @@ output "gateway_subnet_id" {
 output "local_network_gateway" {
   value = azurerm_local_network_gateway.local_network_gateway
 }
+
+output "vpn_gw_public_ip_id" {
+  value = azurerm_public_ip.vpn_gw_public_ip.id
+}
+
+output "virtual_network_gateway_id" {
+  value = azurerm_virtual_network_gateway.virtual_network_gateway.id
+}
