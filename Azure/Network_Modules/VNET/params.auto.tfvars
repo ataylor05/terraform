@@ -5,7 +5,7 @@ tags   = {
 }
 
 vnet_name  = "Test"
-vnet_cidrs  = ["10.0.0.0/16"]
+vnet_cidr  = "10.0.0.0/16"
 enable_nsg = true
 
 subnets = {
@@ -54,7 +54,7 @@ nsg_rules = {
     }
 }
 
-enable_p2p_vpn        = true
+enable_p2p_vpn        = false
 gateway_subnet_cidr   = "10.0.254.0/24"
 remote_site_name      = "Home"
 remote_peer_ip        = "1.2.3.4"
@@ -65,3 +65,12 @@ network_gateway_sku   = "VpnGw1"
 vpn_type              = "RouteBased"
 vpn_active_active     = false
 vpn_enable_bgp        = false
+vpn_ike_version       = "IKEv2"
+vpn_psk               = "password"
+vpn_ike_encryption    = "AES256"
+vpn_ike_integrity     = "SHA256"
+vpn_dh_group          = "DHGroup2"
+vpn_ipsec_encryption  = "GCMAES256"
+vpn_ipsec_integrity   = "GCMAES256"
+vpn_pfs_group         = "None"
+vpn_sa_lifetime       = 27000

@@ -14,7 +14,7 @@ resource "azurerm_network_security_group" "network_security_group" {
 
 resource "azurerm_virtual_network" "virtual_network" {
   name                = var.vnet_name
-  address_space       = var.vnet_cidrs
+  address_space       = [var.vnet_cidr]
   location            = var.region
   resource_group_name = azurerm_resource_group.resource_group.name
   tags                = var.tags
@@ -35,6 +35,20 @@ resource "azurerm_subnet" "gateway_subnet" {
   resource_group_name  = azurerm_resource_group.resource_group.name
   virtual_network_name = azurerm_virtual_network.virtual_network.name
   address_prefixes     = [var.gateway_subnet_cidr]
+}
+
+resource "azurerm_route_table" "route_table" {
+  name                          = "${var.vnet_name}-route-table"
+  location                      = var.region
+  resource_group_name           = azurerm_resource_group.resource_group.name
+  disable_bgp_route_propagation = false
+  tags                          = var.tags
+
+  route {
+    name           = "vnet-route"
+    address_prefix = var.vnet_cidr
+    next_hop_type  = "VnetLocal"
+  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "nsg_associations" {
@@ -88,41 +102,36 @@ resource "azurerm_virtual_network_gateway" "virtual_network_gateway" {
   active_active                    = var.vpn_active_active
   enable_bgp                       = var.vpn_enable_bgp
   sku                              = var.network_gateway_sku
-  default_local_network_gateway_id = azurerm_local_network_gateway.local_network_gateway.id
+  default_local_network_gateway_id = azurerm_local_network_gateway.local_network_gateway[0].id
   tags                             = var.tags
 
   ip_configuration {
     name                          = "vnetGatewayConfig"
-    public_ip_address_id          = azurerm_public_ip.vpn_gw_public_ip.id
-    private_ip_address_allocation = var.pip_allocation_method
-    subnet_id                     = azurerm_subnet.gateway_subnet.id
+    public_ip_address_id          = azurerm_public_ip.vpn_gw_public_ip[0].id
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.gateway_subnet[0].id
   }
 }
 
-resource "azurerm_virtual_network_gateway_connection" "onpremise" {
-  count                      = "${var.enable_p2p_vpn == true ? 1 : 0}"
-  depends_on                 = [azurerm_virtual_network_gateway.virtual_network_gateway]
+resource "azurerm_virtual_network_gateway_connection" "vpn_connection" {
+  count                      = var.enable_p2p_vpn ? 1 : 0
   name                       = "Hub-to-OnPrem"
   location                   = var.region
-  resource_group_name        = var.hub_rg_name
+  resource_group_name        = azurerm_resource_group.resource_group.name
   type                       = "IPsec"
-  connection_protocol        = "IKEv2"
-  virtual_network_gateway_id = azurerm_virtual_network_gateway.virtual_network_gateway[count.index].id
-  local_network_gateway_id   = azurerm_local_network_gateway.ptp_vpn_local_gw[count.index].id
-  shared_key                 = var.ptp_vpn_psk
+  connection_protocol        = var.vpn_ike_version
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.virtual_network_gateway[0].id
+  local_network_gateway_id   = azurerm_local_network_gateway.local_network_gateway[0].id
+  shared_key                 = var.vpn_psk
 
   ipsec_policy {
-   ike_encryption   = var.ptp_vpn_ike_encryption
-   ike_integrity    = var.ptp_vpn_ike_integrity
-   dh_group         = var.ptp_vpn_dh_group
-   ipsec_encryption = var.ptp_vpn_ipsec_encryption
-   ipsec_integrity  = var.ptp_vpn_ipsec_integrity
-   pfs_group        = var.ptp_vpn_pfs_group
-   sa_lifetime      = var.ptp_vpn_sa_lifetime
-  }
-
-  tags = {
-    environment = var.environment_tag
+   ike_encryption   = var.vpn_ike_encryption
+   ike_integrity    = var.vpn_ike_integrity
+   dh_group         = var.vpn_dh_group
+   ipsec_encryption = var.vpn_ipsec_encryption
+   ipsec_integrity  = var.vpn_ipsec_integrity
+   pfs_group        = var.vpn_pfs_group
+   sa_lifetime      = var.vpn_sa_lifetime
   }
 }
 
@@ -130,7 +139,7 @@ resource "azurerm_route" "vpn_route" {
   count               = "${var.enable_p2p_vpn == true ? 1 : 0}"
   name                = "VPNRoute"
   resource_group_name = azurerm_resource_group.resource_group.name
-  route_table_name    = azurerm_virtual_network.virtual_network.
-  address_prefix      = var.ptp_vpn_remote_network
+  route_table_name    = azurerm_route_table.route_table.name
+  address_prefix      = var.remote_network_cidr
   next_hop_type       = "VirtualNetworkGateway"
 }

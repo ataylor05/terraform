@@ -1,8 +1,8 @@
 variable "tags" {}
 
-variable "vnet_cidrs" {
+variable "vnet_cidr" {
     description = "The address space that is used the virtual network"
-    type        = list(any)
+    type        = string
 }
 
 variable "vnet_name" {
@@ -77,4 +77,59 @@ variable "vpn_active_active" {
 variable "vpn_enable_bgp" {
     description = "f true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway"
     type        = bool
+}
+
+variable "vpn_psk" {
+    type        = string
+    sensitive   = true
+    default     = null
+    description = "The protocol used for this VPN Link Connection. Possible values are IKEv1 and IKEv2"
+}
+
+variable "vpn_ike_version" {
+    type        = string
+    default     = "IKEv2"
+    description = "The protocol used for this VPN Link Connection. Possible values are IKEv1 and IKEv2"
+}
+
+variable "vpn_ike_encryption" {
+    type = string
+    default = "AES256"
+    description = "The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256."
+}
+
+variable "vpn_ike_integrity" {
+    type        = string
+    default     = "SHA256"
+    description = "The IKE integrity algorithm. Valid options are GCMAES128, GCMAES256, MD5, SHA1, SHA256, or SHA384."
+}
+
+variable "vpn_dh_group" {
+    type        = string
+    default     = "DHGroup2"
+    description = "The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None."
+}
+
+variable "vpn_ipsec_encryption" {
+    type        = string
+    default     = "AES256"
+    description = "The IPSec encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, GCMAES192, GCMAES256, or None."
+}
+
+variable "vpn_ipsec_integrity" {
+    type        = string
+    default     = "GCMAES256"
+    description = "The IPSec integrity algorithm. Valid options are GCMAES128, GCMAES192, GCMAES256, MD5, SHA1, or SHA256."
+}
+
+variable "vpn_pfs_group" {
+    type        = string
+    default     = "None"
+    description = "The DH group used in IKE phase 2 for new child SA. Valid options are ECP256, ECP384, PFS1, PFS14, PFS2, PFS2048, PFS24, PFSMM, or None."
+}
+
+variable "vpn_sa_lifetime" {
+    type        = number
+    default     = 27000
+    description = "The IPSec SA lifetime in seconds. Must be at least 300 seconds."
 }
