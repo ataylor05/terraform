@@ -137,9 +137,23 @@ resource "azurerm_virtual_network_gateway_connection" "vpn_connection" {
 
 resource "azurerm_route" "vpn_route" {
   count               = "${var.enable_p2p_vpn == true ? 1 : 0}"
-  name                = "VPNRoute"
+  name                = "VPN-Route"
   resource_group_name = azurerm_resource_group.resource_group.name
   route_table_name    = azurerm_route_table.route_table.name
   address_prefix      = var.remote_network_cidr
   next_hop_type       = "VirtualNetworkGateway"
+}
+
+resource "azurerm_route" "internet_route" {
+  name                = "Internet-Route"
+  resource_group_name = azurerm_resource_group.resource_group.name
+  route_table_name    = azurerm_route_table.route_table.name
+  address_prefix      = "0.0.0.0/0"
+  next_hop_type       = "Internet"
+}
+
+resource "azurerm_subnet_route_table_association" "route_table_associations" {
+  for_each       = { for k, v in var.subnets : k => v }
+  subnet_id      = azurerm_subnet.subnets[each.key].id
+  route_table_id = azurerm_route_table.route_table.id
 }
