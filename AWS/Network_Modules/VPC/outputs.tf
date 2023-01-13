@@ -3,6 +3,11 @@ output "vpc_id" {
   description = "The ID of the VPC"
 }
 
+output "vpc_cidr" {
+  value       = aws_vpc.vpc.cidr_block
+  description = "The CIDR block of the VPC"
+}
+
 output "vpc_arn" {
   value       = aws_vpc.vpc.arn
   description = "The ARN of the VPC"
@@ -18,7 +23,6 @@ output "vpc_default_route_table_id" {
   description = "The ID of the default route table associated with this VPC"
 }
 
-
 output "vpc_default_network_acl_id" {
   value       = aws_vpc.vpc.default_network_acl_id
   description = "The ID of the network ACL created by default on VPC creation"
@@ -29,28 +33,12 @@ output "vpc_default_security_group_id" {
   description = "The ID of the security group created by default on VPC creation"
 }
 
-output "public_subnet_ids" {
-  value = {
-    for id in keys(var.subnets.public) : id => aws_subnet.public_subnets[id].id
-  }
+output "public_subnets" {
+  value = aws_subnet.public_subnets
 }
 
-output "public_subnet_arns" {
-  value = {
-    for id in keys(var.subnets.public) : id => aws_subnet.public_subnets[id].arn
-  }
-}
-
-output "private_subnet_ids" {
-  value = {
-    for id in keys(var.subnets.private) : id => aws_subnet.private_subnets[id].id
-  }
-}
-
-output "private_subnet_arns" {
-  value = {
-    for id in keys(var.subnets.private) : id => aws_subnet.private_subnets[id].arn
-  }
+output "private_subnets" {
+  value = aws_subnet.private_subnets
 }
 
 output "internet_gateway_id" {
@@ -96,4 +84,19 @@ output "vpn_gw_id" {
 output "vpn_gw_arn" {
   value       = aws_vpn_gateway.vpn_gw.*.arn
   description = "Amazon Resource Name (ARN) of the VPN Gateway"
+}
+
+output "transit_gateway_arn" {
+  value       = aws_ec2_transit_gateway.transit_gateway.*.arn
+  description = "EC2 Transit Gateway Amazon Resource Name (ARN)."
+}
+
+output "transit_gateway_id" {
+  value       = aws_ec2_transit_gateway.transit_gateway.*.id
+  description = "EC2 Transit Gateway identifier."
+}
+
+output "transit_gateway_association_default_route_table_id" {
+  value       = aws_ec2_transit_gateway.transit_gateway.*.association_default_route_table_id
+  description = "Identifier of the default association route table."
 }
